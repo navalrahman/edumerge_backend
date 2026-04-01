@@ -13,12 +13,12 @@ const authRoutes = require('./routes/admin/AdminRoute');
 const app = express();
 
 // Since cookies are being passed to frontend, we might need credentials in CORS
-// app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 
-app.use(cors({
-  origin: "http://localhost:3000", // your frontend
-  credentials: true
-}));
+// app.use(cors({
+//   origin: "http://localhost:3000", // your frontend
+//   credentials: true
+// }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 

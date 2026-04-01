@@ -4,7 +4,6 @@ const Program = require('../../models/Program');
 const createProgram = async (req, res) => {
     try {
         const data = req.body;
-        // Validate quota equals intake
         const kcet = parseInt(data.quotas?.KCET) || 0;
         const comedk = parseInt(data.quotas?.COMEDK) || 0;
         const management = parseInt(data.quotas?.Management) || 0;
@@ -32,14 +31,13 @@ const getPrograms = async (req, res) => {
     }
 };
 
-// Update program intake/quotas (Seat Matrix)
+// Update program
 const updateProgram = async (req, res) => {
     try {
         const { totalIntake, quotas } = req.body;
         const program = await Program.findById(req.params.id);
         if (!program) return res.status(404).json({ error: 'Program not found' });
 
-        // Validate quota equals intake
         const kcet = parseInt(quotas?.KCET) || 0;
         const comedk = parseInt(quotas?.COMEDK) || 0;
         const management = parseInt(quotas?.Management) || 0;

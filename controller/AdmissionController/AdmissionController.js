@@ -46,67 +46,6 @@ const updateApplicant = async (req, res) => {
     }
 };
 
-// Allocate Seat (Locking)
-// const allocateSeat = async (req, res) => {
-//     console.log('req', req.body.applicant);
-
-//     try {
-//         const { documentStatus, feeStatus } = req.body.applicant;
-//         console.log('documentStatus', documentStatus);
-//         console.log('feeStatus', feeStatus);
-//         const applicant = await Applicant.findById(req.params.id);
-//         if (!applicant) return res.status(404).json({ error: 'Applicant not found' });
-
-//         if (documentStatus) applicant.documentStatus = documentStatus;
-//         if (feeStatus) applicant.feeStatus = feeStatus;
-
-//         await applicant.save();
-//         res.json(applicant);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-//     // try {
-//     //     console.log('🚀 Allocating Seat for:', req.params.applicantId);
-//     //     const applicant = await Applicant.findById(req.params.applicantId);
-//     //     if (!applicant) return res.status(404).json({ error: 'Applicant not found' });
-//     //     if (applicant.status !== 'Draft') return res.status(400).json({ error: 'Applicant seat already locked or admitted' });
-
-//     //     const programId = req.body.programId || applicant.programId;
-//     //     const quotaType = req.body.quotaType || applicant.quotaType;
-//     //     console.log('📦 Program:', programId, 'Quota:', quotaType);
-
-//     //     if (!programId || !quotaType) return res.status(400).json({ error: 'Program ID and Quota Type required' });
-
-//     //     const program = await Program.findById(programId);
-//     //     if (!program) return res.status(404).json({ error: 'Program not found' });
-
-//     //     if (!program.filledSeats) program.filledSeats = { KCET: 0, COMEDK: 0, Management: 0 };
-//     //     if (!program.quotas) program.quotas = { KCET: 0, COMEDK: 0, Management: 0 };
-
-//     //     const allowedQuota = program.quotas[quotaType] || 0;
-//     //     const filledQuota = program.filledSeats[quotaType] || 0;
-
-//     //     if (filledQuota >= allowedQuota) {
-//     //         return res.status(400).json({ error: `Quota full for ${quotaType}` });
-//     //     }
-
-//     //     program.filledSeats[quotaType] = filledQuota + 1;
-//     //     program.markModified('filledSeats'); // Ensure Mongoose tracks the update
-//     //     await program.save();
-
-//     //     applicant.programId = programId;
-//     //     applicant.quotaType = quotaType;
-//     //     applicant.status = 'Seat Locked';
-
-//     //     if (req.body.allotmentNumber) applicant.allotmentNumber = req.body.allotmentNumber;
-
-//     //     await applicant.save();
-//     //     res.json({ message: 'Seat allocated successfully', applicant });
-
-//     // } catch (err) {
-//     //     res.status(500).json({ error: err.message });
-//     // }
-// };
 
 const allocateSeat = async (req, res) => {
     try {
@@ -117,14 +56,14 @@ const allocateSeat = async (req, res) => {
             return res.status(404).json({ error: 'Applicant not found' });
         }
 
-        // ✅ Prevent re-allocation
+        // Prevent re-allocation
         if (applicant.status !== 'Draft') {
             return res.status(400).json({
                 error: 'Seat already locked or applicant already admitted'
             });
         }
 
-        // ✅ Get program + quota from applicant (no need from body)
+        // Get program + quota from applicant (no need from body)
         const programId = applicant.programId;
         const quotaType = applicant.quotaType;
 
@@ -134,27 +73,25 @@ const allocateSeat = async (req, res) => {
             });
         }
 
-        // ✅ Fetch program
+        // Fetch program
         const program = await Program.findById(programId);
         if (!program) {
             return res.status(404).json({ error: 'Program not found' });
         }
 
-        // ✅ Safe defaults
+        // Safe defaults
         const allowedQuota = program.quotas?.[quotaType] || 0;
         const filledQuota = program.filledSeats?.[quotaType] || 0;
 
-        console.log('📊 Quota:', quotaType);
-        console.log('Allowed:', allowedQuota, 'Filled:', filledQuota);
 
-        // ❌ No seats left
+        // No seats left
         if (filledQuota >= allowedQuota) {
             return res.status(400).json({
                 error: `No seats left in ${quotaType}`
             });
         }
 
-        // ✅ ATOMIC UPDATE (prevents race condition)
+        // ATOMIC UPDATE (prevents race condition)
         const updatedProgram = await Program.findOneAndUpdate(
             {
                 _id: programId,
@@ -172,10 +109,9 @@ const allocateSeat = async (req, res) => {
             });
         }
 
-        // ✅ Update applicant
+        //  Update applicant
         applicant.status = 'Seat Locked';
 
-        // optional
         if (req.body?.allotmentNumber) {
             applicant.allotmentNumber = req.body.allotmentNumber;
         }
@@ -183,7 +119,7 @@ const allocateSeat = async (req, res) => {
         await applicant.save();
 
         res.json({
-            message: '✅ Seat allocated successfully',
+            message: 'Seat allocated successfully',
             applicant
         });
 

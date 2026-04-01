@@ -4,10 +4,8 @@ const admissionController = require('../../controller/AdmissionController/Admiss
 const requireAuth = require('../../middleware/auth');
 const checkRole = require('../../middleware/roleAuth');
 
-// Apply authentication middleware to all admission routes
 router.use(requireAuth);
 
-// Admission tasks are for Admission Officers and Admins
 router.post('/applicant', checkRole(['Admin', 'Admission Officer']), admissionController.createApplicant);
 router.get('/applicants', checkRole(['Admin', 'Admission Officer', 'Management']), admissionController.getApplicants);
 router.put('/applicant/:id', checkRole(['Admin', 'Admission Officer']), admissionController.updateApplicant);

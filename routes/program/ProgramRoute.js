@@ -6,7 +6,6 @@ const checkRole = require('../../middleware/roleAuth');
 
 router.use(requireAuth);
 
-// Master Setup is for Admin ONLY
 router.post('/program', checkRole(['Admin']), programController.createProgram);
 router.post('/programs', checkRole(['Admin']), programController.createProgram); 
 router.put('/program/:id', checkRole(['Admin']), programController.updateProgram); 

@@ -21,7 +21,7 @@ const getDashboardStats = async (req, res) => {
 
             seatMatrix.push({
                 programName: p.programName,
-                totalIntake: intake, // ✅ ensure safe value
+                totalIntake: intake, 
                 quotas: p.quotas || {},
                 filledSeats: p.filledSeats || {},
                 remaining: {
